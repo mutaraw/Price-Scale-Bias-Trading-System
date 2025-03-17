@@ -49,6 +49,11 @@ By rounding prices to significant levels (such as 84,000 instead of 84,899.99), 
 This script is for **educational and personal use only**. Redistribution or commercial use is prohibited. The script is designed to improve trading strategies but does not guarantee profits. Always use appropriate risk management and backtest any strategy before live trading.
 
 ## **Screenshots or Example Charts**:
+## BTC Futures
 ![TradingExample](https://github.com/user-attachments/assets/76ea0e49-ebb0-43e1-81ee-b30beaf116d9)
+
+## BTC Futures
 ![tradingviewExample2](https://github.com/user-attachments/assets/b28a9daf-7bc9-4ce1-9015-89a860dcb18c)
+
+## NQ
 ![nasdaq](https://github.com/user-attachments/assets/015ceb50-f457-480b-b9be-9e9319a82abb)
