@@ -1,0 +1,123 @@
+//@version=6
+strategy("Price Scale-Based Bias Trading System", overlay=true)
+
+// =============================
+// Copyright © 2025 William Mutara
+// All rights reserved.
+// This script is for educational and personal use only. Redistribution or commercial use is prohibited.
+// =============================
+
+// =============================
+// Function to dynamically round based on price magnitude
+// 
+// Formula:
+//     rounded value = round(floor(x / step) * step)
+//
+// Step size is determined based on the magnitude of the price:
+//     - If price > 10000 → round to nearest 1000
+//     - If price > 1000 → round to nearest 100
+//     - If price > 100 → round to nearest 10
+//     - If price > 10 → round to nearest 1
+//     - Else → round to nearest 0.1
+//
+// Example:
+//     x = 12345
+//     step = 1000
+//     floor(12345 / 1000) = 12
+//     12 * 1000 = 12000
+// =============================
+roundToDynamic(x) =>
+    step = x > 10000 ? 1000 : x > 1000 ? 100 : x > 100 ? 10 : x > 10 ? 1 : 0.1
+    math.round((math.floor(x / step) * step), 0)
+
+// =============================
+// Function to calculate dynamic bias for close adjustment based on price scale
+//
+// Formula:
+//     bias = 
+//         500   if price > 10000
+//         50    if price > 1000
+//         5     if price > 100
+//         1     if price > 10
+//         0.1   otherwise
+//
+// Example:
+//     x = 12345
+//     bias = 500
+//     Rounded value + bias = 12000 + 500 = 12500
+//
+// Purpose:
+// - Bias creates an offset based on the price scale, which helps in dynamic sensitivity.
+// - Adjusts for price magnitude differences.
+// =============================
+calcBias(x) =>
+    step = x > 10000 ? 500 : x > 1000 ? 50 : x > 100 ? 5 : x > 10 ? 1 : 0.1
+    step
+
+// =============================
+// Apply the rounding function to close price and VWAP
+// - `yy` → Rounded close + bias adjustment
+// - `zz` → VWAP based on rounded open
+// =============================
+yy = roundToDynamic(close) + calcBias(close) // Adjusted close with bias
+zz = math.round(ta.vwap(roundToDynamic(open)), 0) // VWAP based on rounded open
+
+// =============================
+// Request close and VWAP from different timeframes
+// - `a` → 10-minute adjusted close with bias
+// - `b` → 1-day VWAP based on rounded open
+// =============================
+a = request.security(syminfo.tickerid, 
+     timeframe = "10", 
+     expression = yy, 
+     gaps = barmerge.gaps_off, 
+     lookahead = barmerge.lookahead_on)
+
+b = request.security(syminfo.tickerid, 
+     timeframe = "1D", 
+     expression = zz, 
+     gaps = barmerge.gaps_off, 
+     lookahead = barmerge.lookahead_on)
+
+// =============================
+// Strategy Logic
+// 
+// Crossover condition:
+//     - Bullish Crossover → When `a` (10-min close) crosses over `b` (1-day VWAP)
+//     - Bearish Crossunder → When `a` (10-min close) crosses under `b` (1-day VWAP)
+//
+// Example:
+//     If a > b → Long Entry
+//     If a < b → Short Entry
+//
+// Purpose:
+// - VWAP crossover helps identify trend shifts and value zones
+// - Bias adjustment creates dynamic sensitivity based on price scale
+// =============================
+
+// LONG ENTRY CONDITION
+if ta.crossover(a, b)
+    strategy.entry("Long", strategy.long, comment = "O: " + str.tostring(zz) + ", C: " + str.tostring(yy))
+    alert("Buy Alert!", alert.freq_once_per_bar_close)
+    // placeholder for automated trading
+else
+    strategy.cancel(id="Long")
+
+// SHORT ENTRY CONDITION
+if ta.crossunder(a, b)
+    strategy.entry("Short", strategy.short, comment = "O: " + str.tostring(zz) + ", C: " + str.tostring(yy))
+    alert("Sell Alert!", alert.freq_once_per_bar_close)
+    // placeholder for automated trading
+else
+    strategy.cancel(id="Short")
+
+// =============================
+// Plot Data
+// - Plot adjusted close and VWAP
+// =============================
+
+// Plot adjusted close from 10-minute timeframe
+plot(a, color = color.red, linewidth = 2, title = "10-min Close + Bias")
+
+// Plot VWAP from 1-day timeframe
+plot(b, color = color.teal, linewidth = 2, title = "1-Day VWAP")
