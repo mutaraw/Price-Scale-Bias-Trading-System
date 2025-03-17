@@ -1,5 +1,3 @@
----
-
 # **Price Scale-Based Bias Trading System**
 
 ## **Overview**
@@ -49,7 +47,5 @@ By rounding prices to significant levels (such as 84,000 instead of 84,899.99), 
 ## **Disclaimer**
 
 This script is for **educational and personal use only**. Redistribution or commercial use is prohibited. The script is designed to improve trading strategies but does not guarantee profits. Always use appropriate risk management and backtest any strategy before live trading.
-
----
 
 ## **Screenshots or Example Charts**:
